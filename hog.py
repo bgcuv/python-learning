@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
-import xml.etree.ElementTree as ET
 import os
 import glob
+import json
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import GridSearchCV
 
@@ -16,6 +16,8 @@ from sklearn.metrics import classification_report
 import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+
+from pprint import pprint
 
 
 def extract_hog_features(image):
@@ -35,19 +37,21 @@ def extract_hog_features(image):
 
 
 def load_dataset(data_directory):
-    xml_files = glob.glob(os.path.join(data_directory, "*.xml"))
+    image_directory = "images"
+    json_files = glob.glob(os.path.join(data_directory, "*.json"))
 
     X = []
     y = []
 
     for json_file in json_files:
-        with open(json_file, 'r') as f:
+        with open(json_file, "r") as f:
             data = json.load(f)
 
-            for image_name, image_data in data.items():
-                image_file = os.path.join(data_directory, image_name)
+            for image, image_data in data.items():
+                image_name = image_data["filename"]
+                image_file = os.path.join(os.getcwd(), image_directory, image_name)
 
-                label = image_data["name"]
+                label = image_data["filename"]
 
                 image = cv2.imread(image_file)
                 if image is None:
@@ -60,7 +64,7 @@ def load_dataset(data_directory):
     return np.array(X), np.array(y)
 
 
-data_directory = "export"
+data_directory = "annotations"
 X, y = load_dataset(data_directory)
 
 
