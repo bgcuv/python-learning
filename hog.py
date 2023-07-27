@@ -40,22 +40,22 @@ def load_dataset(data_directory):
     X = []
     y = []
 
-    for xml_file in xml_files:
-        image_file = (
-            os.path.splitext(xml_file)[0] + ".jpg"
-        )  # Assuming the image files are in .jpg format
+    for json_file in json_files:
+        with open(json_file, 'r') as f:
+            data = json.load(f)
 
-        tree = ET.parse(xml_file)
-        root = tree.getroot()
-        label = root.find("object").find("name").text
+            for image_name, image_data in data.items():
+                image_file = os.path.join(data_directory, image_name)
 
-        image = cv2.imread(image_file)
-        if image is None:
-            continue
+                label = image_data["name"]
 
-        hog_features = extract_hog_features(image)
-        X.append(hog_features)
-        y.append(label)
+                image = cv2.imread(image_file)
+                if image is None:
+                    continue
+
+                hog_features = extract_hog_features(image)
+                X.append(hog_features)
+                y.append(label)
 
     return np.array(X), np.array(y)
 
